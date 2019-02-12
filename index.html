@@ -1,0 +1,2396 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.6/p5.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.6/addons/p5.dom.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.4.23/addons/p5.sound.js"></script>
+  <style>
+  #defaultCanvas {
+    margin: auto;
+	position: absolute;
+    left: 0;
+    right: 0;
+	top: 0;
+  }
+  #endframe {
+	width: 600px;
+	height: 400px;
+    margin: auto;
+	position: absolute;
+    left: 0;
+    right: 0;
+	top: 0;
+	z-index: 1;
+	display: none;
+	-webkit-transition: opacity 5s ease-in-out;
+    -moz-transition: opacity 5s ease-in-out;
+    -ms-transition: opacity 5s ease-in-out;
+    -o-transition: opacity 5s ease-in-out;
+    transition: opacity 5s ease-in-out;
+  }
+  #oend {
+	  display: block;
+	  margin: auto;
+	  height: 400px;
+  }
+  </style>
+</head>
+
+<body>
+	<div id="endframe"><img id="oend"></div>
+  <script>
+    var logo;
+    var pixFont;
+    var pixFont2;
+    var pixFont3;
+    var screenWidth = 600;
+    var screenHeight = 400;
+    var kenny = [];
+    var jess = [];
+    var mike = [];
+    var scar = [];
+    var charScale = 150;
+    var charNum;
+    var hommie = [];
+    var hommieHP = [];
+    var hommieHPDif = [];
+    var cloud;
+    var cDis = 0;
+    var side;
+    var gSel = 6;
+    var gameStarted = false;
+
+    var bgImg = [];
+    var fActAni = [];
+    var rActAni = [];
+    var bActAni = [];
+    var hActAni = [];
+    var mActAni = [];
+    var sActAni = [];
+    var cRepAni = [];
+    var salBox = [];
+    var salItem = [];
+    var endAniA;
+    var endAniB;
+    var endAniC;
+
+    var partsFound = false;
+    var salFX = false;
+    var salSelVel = 0;
+    var salB = [];
+
+    var endGame = false;
+    var endVel = 0;
+
+    var titleBGM;
+    var selSFX;
+    var warnSFX;
+    var confSFX;
+    var charSetSFX;
+    var caeSFX;
+    var walkSFX;
+    var deathSFX;
+    var actSFX = [];
+    var SFXplayed = false;
+
+    var fAdd = 0;
+    var rAdd = 0;
+    var bAdd = 0;
+    var hAdd = 0;
+    var mAdd = 0;
+    var sAdd = 0;
+    var hpDif = 0;
+    var stDif = 0;
+    var mhpDif = 0;
+
+    var timeCred = 24;
+    var hp = 100;
+    var hpHalfed = false;
+    var mhp = 100;
+    var st = 100;
+    var stReqAdded = false;
+    var day = 1;
+    var page = 0;
+    var isDay = false;
+    var fReq = 4; // Food Requirement;
+    var rReq = 6; // Rest Requirement;
+    var bReq = 1; // Bonfire Requirement;
+    var hReq = 3; // Hommie Requirement;
+    var mReq = 2; // Mental Requirement;
+    var sReq = 8; // Salvage Requirement;
+    var cReq = 6; // CarFix Requirement;
+    var fSel = 0;
+    var rSel = 0;
+    var bSel = 0;
+    var hSel = 0;
+    var mSel = 0;
+    var sSel = 0;
+    var cSel = 0;
+    var bestEnd = false;
+    var failed = false;
+    var failCount = 0;
+    var totalTime;
+    var isDayZero = false;
+    var bgmDay;
+
+    var scene = 0; // 0: MainMenu; 1: Game; 2: Instruction; 3: Credit;
+    var sel = 0;
+    var charSel = 1;
+    var charSet = false;
+    var charSetX = false;
+    var overcast = true;
+    var kenAniVel = 0;
+    var fc;
+    var fC = 0;
+    var fCC = 0;
+    var fCCC = 0;
+    var fCCCC = 0;
+
+    var sceneEle = [];
+    var sceneEleVel = [];
+    var pass = 0;
+    var pointer = 0;
+    //var xfc = frameCount % 200;
+
+    var kenX = screenWidth / 2;
+    var kenY = screenHeight / 2;
+
+    function preload() {
+      pixFont = loadFont("game_over.ttf");
+      pixFont2 = loadFont("ARCADECLASSIC.ttf");
+      pixFont3 = loadFont("UnscreenMK.ttf");
+
+      titleBGM = loadSound("Audio/Title.mp3");
+      bgmDay = loadSound("Audio/SeemLikeRain.mp3");
+      selSFX = loadSound("Audio/Select.mp3");
+      warnSFX = loadSound("Audio/Warning.mp3");
+      confSFX = loadSound("Audio/Confirm.mp3");
+      charSetSFX = loadSound("Audio/charSet.mp3");
+      carSFX = loadSound("Audio/Car.mp3");
+      walkSFX = loadSound("Audio/Walk.mp3");
+      deathSFX = loadSound("Audio/Death.mp3");
+
+      actSFX[0] = loadSound("Audio/actFood.mp3");
+      actSFX[1] = loadSound("Audio/actSle.mp3");
+      actSFX[2] = loadSound("Audio/actFire.mp3");
+      actSFX[3] = loadSound("Audio/actHom.mp3");
+      actSFX[4] = loadSound("Audio/actFish.mp3");
+      actSFX[5] = loadSound("Audio/actSal.mp3");
+      actSFX[6] = loadSound("Audio/actFix.mp3");
+
+      cloud = loadImage("Cloud.png");
+      sceneEle[0] = loadImage("Element/Light.png");
+      sceneEle[1] = loadImage("Element/LitterBin.png");
+      sceneEle[2] = loadImage("Element/MailBox.png");
+      sceneEle[3] = loadImage("Element/brokenCar.png");
+      sceneEle[4] = loadImage("Element/BusStopSign.png");
+      sceneEle[5] = loadImage("Element/Car.png");
+      sceneEle[6] = loadImage("Element/Tree.png");
+
+      // Kenny Elements
+      kenny[0] = loadImage("Char/KENNY/Kenny/KENNY00.png");
+      kenny[1] = loadImage("Char/KENNY/Kenny/KENNY01.png");
+      kenny[2] = loadImage("Char/KENNY/Kenny/KENNY02.png");
+      kenny[3] = loadImage("Char/KENNY/Kenny/KENNY03.png");
+      kenny[4] = loadImage("Char/KENNY/Kenny/KENNY04.png");
+      kenny[5] = loadImage("Char/KENNY/Kenny/KENNY05.png");
+      kenny[6] = loadImage("Char/KENNY/Kenny/KENNY06.png");
+      kenny[7] = loadImage("Char/KENNY/Kenny/KENNY07.png");
+      kenny[8] = loadImage("Char/KENNY/Kenny/KENNY08.png");
+      kenny[9] = loadImage("Char/KENNY/Kenny/KENNY09.png");
+      kenny[10] = loadImage("Char/KENNY/Kenny/KENNY10.png");
+      kenny[11] = loadImage("Char/KENNY/Kenny/KENNY11.png");
+      kenny[12] = loadImage("Char/KENNY/Kenny/KENNY12.png");
+      kenny[13] = loadImage("Char/KENNY/Kenny/KENNY13.png");
+      kenny[14] = loadImage("Char/KENNY/Kenny/KENNY14.png");
+      kenny[15] = loadImage("Char/KENNY/Kenny/KENNY15.png");
+      kenny[16] = loadImage("Char/KENNY/Kenny/KENNY16.png");
+      kenny[17] = loadImage("Char/KENNY/Kenny/KENNY17.png");
+      kenny[18] = loadImage("Char/KENNY/Kenny/KENNY18.png");
+      kenny[19] = loadImage("Char/KENNY/Kenny/KENNY19.png");
+      kenny[20] = loadImage("Char/KENNY/Kenny/KENNY20.png");
+      kenny[21] = loadImage("Char/KENNY/Kenny/KENNY21.png");
+
+      // Jess Elements
+      jess[0] = loadImage("Char/KENNY/Jess/JESS00.png");
+      jess[1] = loadImage("Char/KENNY/Jess/JESS01.png");
+      jess[2] = loadImage("Char/KENNY/Jess/JESS02.png");
+      jess[3] = loadImage("Char/KENNY/Jess/JESS03.png");
+      jess[4] = loadImage("Char/KENNY/Jess/JESS04.png");
+      jess[5] = loadImage("Char/KENNY/Jess/JESS05.png");
+      jess[6] = loadImage("Char/KENNY/Jess/JESS06.png");
+      jess[7] = loadImage("Char/KENNY/Jess/JESS07.png");
+      jess[8] = loadImage("Char/KENNY/Jess/JESS08.png");
+      jess[9] = loadImage("Char/KENNY/Jess/JESS09.png");
+      jess[10] = loadImage("Char/KENNY/Jess/JESS10.png");
+      jess[11] = loadImage("Char/KENNY/Jess/JESS11.png");
+      jess[12] = loadImage("Char/KENNY/Jess/JESS12.png");
+      jess[13] = loadImage("Char/KENNY/Jess/JESS13.png");
+      jess[14] = loadImage("Char/KENNY/Jess/JESS14.png");
+      jess[15] = loadImage("Char/KENNY/Jess/JESS15.png");
+      jess[16] = loadImage("Char/KENNY/Jess/JESS16.png");
+      jess[17] = loadImage("Char/KENNY/Jess/JESS17.png");
+
+      // Mike Elements
+      mike[0] = loadImage("Char/KENNY/Mike/MIKE00.png");
+      mike[1] = loadImage("Char/KENNY/Mike/MIKE01.png");
+      mike[2] = loadImage("Char/KENNY/Mike/MIKE02.png");
+      mike[3] = loadImage("Char/KENNY/Mike/MIKE03.png");
+      mike[4] = loadImage("Char/KENNY/Mike/MIKE04.png");
+      mike[5] = loadImage("Char/KENNY/Mike/MIKE05.png");
+      mike[6] = loadImage("Char/KENNY/Mike/MIKE06.png");
+      mike[7] = loadImage("Char/KENNY/Mike/MIKE07.png");
+      mike[8] = loadImage("Char/KENNY/Mike/MIKE08.png");
+      mike[9] = loadImage("Char/KENNY/Mike/MIKE09.png");
+
+      // Scarlett Elements
+      scar[0] = loadImage("Char/KENNY/Scarlett/SCARLETT00.png");
+      scar[1] = loadImage("Char/KENNY/Scarlett/SCARLETT01.png");
+      scar[2] = loadImage("Char/KENNY/Scarlett/SCARLETT02.png");
+      scar[3] = loadImage("Char/KENNY/Scarlett/SCARLETT03.png");
+      scar[4] = loadImage("Char/KENNY/Scarlett/SCARLETT04.png");
+      scar[5] = loadImage("Char/KENNY/Scarlett/SCARLETT05.png");
+      scar[6] = loadImage("Char/KENNY/Scarlett/SCARLETT06.png");
+      scar[7] = loadImage("Char/KENNY/Scarlett/SCARLETT07.png");
+      scar[8] = loadImage("Char/KENNY/Scarlett/SCARLETT08.png");
+      scar[9] = loadImage("Char/KENNY/Scarlett/SCARLETT09.png");
+
+      bgImg[0] = loadImage("Element/Choice_Panel_Day_1.png");
+      bgImg[1] = loadImage("Element/Choice_Panel_Day_2.png");
+      bgImg[2] = loadImage("Element/Choice_Panel_Day_3.png");
+
+      fActAni[0] = loadImage("Action/FOOD/Food01.png");
+      fActAni[1] = loadImage("Action/FOOD/Food02.png");
+      fActAni[2] = loadImage("Action/FOOD/Food03.png");
+      fActAni[3] = loadImage("Action/FOOD/Food04.png");
+      fActAni[4] = loadImage("Action/FOOD/Food05.png");
+
+      rActAni[0] = loadImage("Action/SLEEP/Sleep01.png");
+      rActAni[1] = loadImage("Action/SLEEP/Sleep02.png");
+      rActAni[2] = loadImage("Action/SLEEP/Sleep03.png");
+      rActAni[3] = loadImage("Action/SLEEP/Sleep04.png");
+      rActAni[4] = loadImage("Action/SLEEP/Sleep05.png");
+
+      bActAni[0] = loadImage("Action/BONFIRE/Bonfire01.png");
+      bActAni[1] = loadImage("Action/BONFIRE/Bonfire02.png");
+      bActAni[2] = loadImage("Action/BONFIRE/Bonfire03.png");
+      bActAni[3] = loadImage("Action/BONFIRE/Bonfire04.png");
+      bActAni[4] = loadImage("Action/BONFIRE/Bonfire05.png");
+
+      hActAni[0] = loadImage("Action/HOMIE/Homie01.png");
+      hActAni[1] = loadImage("Action/HOMIE/Homie02.png");
+      hActAni[2] = loadImage("Action/HOMIE/Homie03.png");
+      hActAni[3] = loadImage("Action/HOMIE/Homie04.png");
+      hActAni[4] = loadImage("Action/HOMIE/Homie05.png");
+
+      mActAni[0] = loadImage("Action/MENTAL/Mental01.png");
+      mActAni[1] = loadImage("Action/MENTAL/Mental02.png");
+      mActAni[2] = loadImage("Action/MENTAL/Mental03.png");
+      mActAni[3] = loadImage("Action/MENTAL/Mental04.png");
+      mActAni[4] = loadImage("Action/MENTAL/Mental05.png");
+
+      sActAni[0] = loadImage("Action/SALVAGE/Salvage01.png");
+      sActAni[1] = loadImage("Action/SALVAGE/Salvage02.png");
+      sActAni[2] = loadImage("Action/SALVAGE/Salvage03.png");
+      sActAni[3] = loadImage("Action/SALVAGE/Salvage04.png");
+      sActAni[4] = loadImage("Action/SALVAGE/Salvage05.png");
+
+      cRepAni[0] = loadImage("Action/CARREP/Repairing01.png");
+      cRepAni[1] = loadImage("Action/CARREP/Repairing02.png");
+      cRepAni[2] = loadImage("Action/CARREP/Repairing03.png");
+      cRepAni[3] = loadImage("Action/CARREP/Repairing04.png");
+      cRepAni[4] = loadImage("Action/CARREP/Repairing05.png");
+
+      salBox[0] = loadImage("Element/SALVAGE/MysteryBox01.png");
+      salBox[1] = loadImage("Element/SALVAGE/MysteryBox02.png");
+      salItem[0] = loadImage("Element/SALVAGE/CannedFood.png");
+      salItem[1] = loadImage("Element/SALVAGE/MedKit.png");
+      salItem[2] = loadImage("Element/SALVAGE/Parts.png");
+      salItem[3] = loadImage("Element/SALVAGE/Poster.png");
+    }
+
+    function setup() {  
+      frameRate(25);
+      imageMode(CENTER);
+      noStroke();
+      createCanvas(screenWidth, screenHeight);
+
+      for (var i = 0; i < 2; i++) {
+        sceneEleVel[i] = round(random(6));
+      }
+
+      for (var i = 0; i < 4; i++) {
+        hommieHP[i] = 3;
+        hommieHPDif[i] = 0;
+      }
+
+      salB[0] = salItem[1];
+      salB[1] = salItem[0];
+      salB[2] = salItem[0];
+      salB[3] = salItem[3];
+      salB[4] = salItem[2];
+
+      background(0);
+    }
+
+    function draw() {
+      fc = frameCount % 20;
+      switch (scene) {
+        case 0:
+          mainmenu();
+          break;
+        case 1:
+          inGame();
+          break;
+        case 2:
+          instructionMenu();
+          break;
+        case 3:
+          creditDis();
+          break;
+        case 4:
+          gamePlaying();
+          break;
+        case 5:
+          endingAni();
+          break;
+        default:
+
+      }
+      //text(salB[0] + " " + salB[1] + " "  + salB[1] + " "  + salB[1], screenWidth / 2, screenHeight / 6 * 3);
+      //text(round(random(3)), screenWidth / 2, screenHeight / 6 * 3);
+      if (endGame == true) {
+        scene = 5;
+      }
+    }
+
+    // scene 0;
+    function mainmenu() {
+      var overcast = true;
+      if (!titleBGM.isPlaying()) {
+        titleBGM.play();
+      }
+      background(0);
+      image(cloud, -(-(0.75 * cDis) % (screenWidth + 500)) - 250, screenHeight / 3 - 20, 500, 500);
+      logoGen();
+      image(cloud, -((1.5 * cDis) % (screenWidth + 200)) + screenWidth + 100, screenHeight / 3 + 10, 200, 200);
+      cDis++;
+      mainSelection();
+    }
+
+    function logoGen() {
+      //background(0, 200);
+      if (overcast) {
+        var gDisX = random(-20, 20);
+        var gDisY = random(-20, 20);
+        var pDisX = random(-20, 20);
+        var pDisY = random(-20, 20);
+        var bDisX = random(-20, 20);
+        var bDisY = random(-20, 20);
+      }
+
+      textAlign(CENTER, CENTER);
+      textFont(pixFont);
+      textSize(150);
+      fill(100);
+      text("OVERCAST", screenWidth / 2 + gDisX, screenHeight / 3 + gDisY);
+      fill(255, 0, 255, 120);
+      text("OVERCAST", screenWidth / 2 + pDisX, screenHeight / 3 + pDisY);
+      fill(0, 255, 255, 120);
+      text("OVERCAST", screenWidth / 2 + bDisX, screenHeight / 3 + bDisY);
+      fill(255);
+      text("OVERCAST", screenWidth / 2, screenHeight / 3);
+    }
+
+    function mainSelection() {
+      displaySel();
+    }
+
+    function displaySel() {
+      textAlign(LEFT, CENTER);
+      textSize(80);
+      if (sel == 0) {
+        text("+Start", screenWidth / 2 - 150, screenHeight / 2);
+        overcast = true;
+      } else {
+        text("-Start", screenWidth / 2 - 150, screenHeight / 2);
+        overcast = false;
+      }
+
+      if (sel == 1) {
+        text("+Instruction", screenWidth / 2 - 150, screenHeight / 2 + 50);
+      } else {
+        text("-Instruction", screenWidth / 2 - 150, screenHeight / 2 + 50);
+      }
+
+      if (sel == 2) {
+        text("+Credit", screenWidth / 2 - 150, screenHeight / 2 + 100);
+      } else {
+        text("-Credit", screenWidth / 2 - 150, screenHeight / 2 + 100);
+      }
+    }
+
+    // scene 1;
+    function inGame() {
+      background(0);
+      if (!gameStarted) {
+        gameStart();
+      } else {
+        gamePlaying();
+      }
+    }
+
+    function gameStart() {
+      if (fc <= 5) {
+        if (charSet) {
+          if (charSel == 1) {
+            image(kenny[17], screenWidth / 2 - 50, screenHeight / 2, 150, 150);
+            image(jess[0], screenWidth / 2 + 50, screenHeight / 2, 150, 150);
+          } else if (charSel == 2) {
+            image(jess[12], screenWidth / 2 + 50, screenHeight / 2, 150, 150);
+            image(kenny[0], screenWidth / 2 - 50, screenHeight / 2, 150, 150);
+          }
+        } else if (!charSet) {
+          image(kenny[0], screenWidth / 2 - 50, screenHeight / 2, 150, 150);
+          image(jess[0], screenWidth / 2 + 50, screenHeight / 2, 150, 150);
+        }
+        image(mike[0], screenWidth / 2 - 150, screenHeight / 2, 150, 150);
+        image(scar[0], screenWidth / 2 + 150, screenHeight / 2, 150, 150);
+      } else if (fc > 5 && fc <= 10) {
+        if (charSet) {
+          if (charSel == 1) {
+            image(kenny[18], screenWidth / 2 - 50, screenHeight / 2, 150, 150);
+            image(jess[0], screenWidth / 2 + 50, screenHeight / 2, 150, 150);
+          } else if (charSel == 2) {
+            image(jess[13], screenWidth / 2 + 50, screenHeight / 2, 150, 150);
+            image(kenny[0], screenWidth / 2 - 50, screenHeight / 2, 150, 150);
+          }
+        } else if (!charSet) {
+          image(kenny[0], screenWidth / 2 - 50, screenHeight / 2, 150, 150);
+          image(jess[0], screenWidth / 2 + 50, screenHeight / 2, 150, 150);
+        }
+        image(mike[0], screenWidth / 2 - 150, screenHeight / 2, 150, 150);
+        image(scar[0], screenWidth / 2 + 150, screenHeight / 2, 150, 150);
+      } else if (fc > 10 && fc <= 15) {
+        if (charSet) {
+          if (charSel == 1) {
+            image(kenny[19], screenWidth / 2 - 50, screenHeight / 2, 150, 150);
+            image(jess[1], screenWidth / 2 + 50, screenHeight / 2, 150, 150);
+          } else if (charSel == 2) {
+            image(jess[14], screenWidth / 2 + 50, screenHeight / 2, 150, 150);
+            image(kenny[1], screenWidth / 2 - 50, screenHeight / 2, 150, 150);
+          }
+        } else if (!charSet) {
+          image(kenny[1], screenWidth / 2 - 50, screenHeight / 2, 150, 150);
+          image(jess[1], screenWidth / 2 + 50, screenHeight / 2, 150, 150);
+        }
+        image(mike[1], screenWidth / 2 - 150, screenHeight / 2, 150, 150);
+        image(scar[1], screenWidth / 2 + 150, screenHeight / 2, 150, 150);
+      } else if (fc > 15) {
+        if (charSet) {
+          if (charSel == 1) {
+            image(kenny[17], screenWidth / 2 - 50, screenHeight / 2, 150, 150);
+            image(jess[1], screenWidth / 2 + 50, screenHeight / 2, 150, 150);
+          } else if (charSel == 2) {
+            image(jess[12], screenWidth / 2 + 50, screenHeight / 2, 150, 150);
+            image(kenny[1], screenWidth / 2 - 50, screenHeight / 2, 150, 150);
+          } else if (!charSet) {
+            image(kenny[1], screenWidth / 2 - 50, screenHeight / 2, 150, 150);
+            image(jess[1], screenWidth / 2 + 50, screenHeight / 2, 150, 150);
+          }
+        } else if (!charSet) {
+          image(kenny[1], screenWidth / 2 - 50, screenHeight / 2, 150, 150);
+          image(jess[1], screenWidth / 2 + 50, screenHeight / 2, 150, 150);
+        }
+        image(mike[1], screenWidth / 2 - 150, screenHeight / 2, 150, 150);
+        image(scar[1], screenWidth / 2 + 150, screenHeight / 2, 150, 150);
+      }
+
+      // Selection Arrow
+      textSize(80);
+      triangle(screenWidth / 2 - 150 + (100 * charSel), screenHeight / 3 - 5, screenWidth / 2 - 150 - 5 + (100 * charSel), screenHeight / 3 - 10, screenWidth / 2 - 150 + 5 + (100 * charSel), screenHeight / 3 - 10);
+      // Char Info
+      var gDisX = random(-20, 20);
+      var gDisY = random(-20, 20);
+      var pDisX = random(-20, 20);
+      var pDisY = random(-20, 20);
+      var bDisX = random(-20, 20);
+      var bDisY = random(-20, 20);
+
+      switch (charSel) {
+        case 0:
+          textSize(200);
+          fill(100);
+          text("MIKE", screenWidth / 6 + gDisX, screenHeight / 4 + gDisY);
+          fill(255, 0, 255, 120);
+          text("MIKE", screenWidth / 6 + pDisX, screenHeight / 4 + pDisY);
+          fill(0, 255, 255, 120);
+          text("MIKE", screenWidth / 6 + bDisX, screenHeight / 4 + bDisY);
+          fill(255);
+          text("MIKE", screenWidth / 6, screenHeight / 4);
+          textSize(80);
+          text("Age: 21 Gender: Male", screenWidth / 6, screenHeight / 5 * 4);
+          if (charSetX) {
+            fill(100);
+            text("He is wounded.", screenWidth / 6 + gDisX, screenHeight / 5 * 4 + 40 + gDisY);
+            fill(255, 0, 255, 120);
+            text("He is wounded.", screenWidth / 6 + pDisX, screenHeight / 5 * 4 + 40 + pDisY);
+            fill(0, 255, 255, 120);
+            text("He is wounded.", screenWidth / 6 + bDisX, screenHeight / 5 * 4 + 40 + bDisY);
+            fill(255);
+            text("He is wounded.", screenWidth / 6, screenHeight / 5 * 4 + 40);
+          } else {
+            text("Clerk of an office.", screenWidth / 6, screenHeight / 5 * 4 + 40);
+          }
+          break;
+        case 1:
+          textSize(200);
+          fill(100);
+          text("KENNY", screenWidth / 6 + gDisX, screenHeight / 4 + gDisY);
+          fill(255, 0, 255, 120);
+          text("KENNY", screenWidth / 6 + pDisX, screenHeight / 4 + pDisY);
+          fill(0, 255, 255, 120);
+          text("KENNY", screenWidth / 6 + bDisX, screenHeight / 4 + bDisY);
+          fill(255);
+          text("KENNY", screenWidth / 6, screenHeight / 4);
+          textSize(80);
+          text("Age: 20 Gender: Male", screenWidth / 6, screenHeight / 5 * 4);
+          text("Bass guitar player of a band.", screenWidth / 6, screenHeight / 5 * 4 + 40);
+          break;
+        case 2:
+          textSize(200);
+          fill(100);
+          text("JESS", screenWidth / 6 + gDisX, screenHeight / 4 + gDisY);
+          fill(255, 0, 255, 120);
+          text("JESS", screenWidth / 6 + pDisX, screenHeight / 4 + pDisY);
+          fill(0, 255, 255, 120);
+          text("JESS", screenWidth / 6 + bDisX, screenHeight / 4 + bDisY);
+          fill(255);
+          text("JESS", screenWidth / 6, screenHeight / 4);
+          textSize(80);
+          text("Age: 23 Gender: Female", screenWidth / 6, screenHeight / 5 * 4);
+          if (charSetX) {
+            fill(100);
+            text("She is dizzy.", screenWidth / 6 + gDisX, screenHeight / 5 * 4 + 40 + gDisY);
+            fill(255, 0, 255, 120);
+            text("She is dizzy.", screenWidth / 6 + pDisX, screenHeight / 5 * 4 + 40 + pDisY);
+            fill(0, 255, 255, 120);
+            text("She is dizzy.", screenWidth / 6 + bDisX, screenHeight / 5 * 4 + 40 + bDisY);
+            fill(255);
+            text("She is dizzy.", screenWidth / 6, screenHeight / 5 * 4 + 40);
+          } else {
+            text("Professional athlete.", screenWidth / 6, screenHeight / 5 * 4 + 40);
+          }
+          break;
+        case 3:
+          textSize(200);
+          fill(100);
+          text("SCARLETT", screenWidth / 6 + gDisX, screenHeight / 4 + gDisY);
+          fill(255, 0, 255, 120);
+          text("SCARLETT", screenWidth / 6 + pDisX, screenHeight / 4 + pDisY);
+          fill(0, 255, 255, 120);
+          text("SCARLETT", screenWidth / 6 + bDisX, screenHeight / 4 + bDisY);
+          fill(255);
+          text("SCARLETT", screenWidth / 6, screenHeight / 4);
+          textSize(80);
+          text("Age: 19 Gender: Female", screenWidth / 6, screenHeight / 5 * 4);
+          if (charSetX) {
+            fill(100);
+            text("She is pissed.", screenWidth / 6 + gDisX, screenHeight / 5 * 4 + 40 + gDisY);
+            fill(255, 0, 255, 120);
+            text("She is pissed.", screenWidth / 6 + pDisX, screenHeight / 5 * 4 + 40 + pDisY);
+            fill(0, 255, 255, 120);
+            text("She is pissed.", screenWidth / 6 + bDisX, screenHeight / 5 * 4 + 40 + bDisY);
+            fill(255);
+            text("She is pissed.", screenWidth / 6, screenHeight / 5 * 4 + 40);
+          } else {
+            text("Waitress of a restaurant.", screenWidth / 6, screenHeight / 5 * 4 + 40);
+          }
+          break;
+        default:
+      }
+
+      if (charSet && fc == 19) {
+        gameStarted = true;
+        scene = 4;
+        gamePlaying();
+      }
+    }
+
+
+    // scene 2;
+    function instructionMenu() {
+      background(0);
+      textAlign(CENTER, CENTER);
+      textSize(72);
+      textFont(pixFont3);
+
+      var gDisX = random(-20, 20);
+      var gDisY = random(-20, 20);
+      var pDisX = random(-20, 20);
+      var pDisY = random(-20, 20);
+      var bDisX = random(-20, 20);
+      var bDisY = random(-20, 20);
+
+      fill(100);
+      text("instruction", screenWidth / 2 + gDisX, screenHeight / 4 + gDisY);
+      fill(255, 0, 255, 120);
+      text("instruction", screenWidth / 2 + pDisX, screenHeight / 4 + pDisY);
+      fill(0, 255, 255, 120);
+      text("instruction", screenWidth / 2 + bDisX, screenHeight / 4 + bDisY);
+      fill(255);
+
+      text("instruction", screenWidth / 2, screenHeight / 4);
+
+      //var ins = "Resource were scarce, and time became so precious. Spend your time wisely. You have one objective, DON'T DIE!";
+      var ins = "Move and Select with arrow keys, confirm and act with enter.";
+      textFont(pixFont3);
+      textSize(24);
+      text(ins, 50, screenHeight / 4 + 20, 500, 200);
+
+      textAlign(LEFT, CENTER);
+      textFont(pixFont);
+      textSize(80);
+      text("+BACK", 60, screenHeight / 5 * 4);
+    }
+
+    // scene 3;
+    function creditDis() {
+      background(0);
+      textFont(pixFont3);
+      textSize(72);
+      textAlign(CENTER, CENTER);
+
+      var gDisX = random(-20, 20);
+      var gDisY = random(-20, 20);
+      var pDisX = random(-20, 20);
+      var pDisY = random(-20, 20);
+      var bDisX = random(-20, 20);
+      var bDisY = random(-20, 20);
+
+      fill(100);
+      text("CREDIT", screenWidth / 2 + gDisX, screenHeight / 4 - 50 + gDisY);
+      fill(255, 0, 255, 120);
+      text("CREDIT", screenWidth / 2 + pDisX, screenHeight / 4 - 50 + pDisY);
+      fill(0, 255, 255, 120);
+      text("CREDIT", screenWidth / 2 + bDisX, screenHeight / 4 - 50 + bDisY);
+      fill(255);
+      text("CREDIT", screenWidth / 2, screenHeight / 4 - 50);
+
+      textAlign(LEFT, CENTER);
+      textSize(32);
+
+      fill(100);
+      text("Toby", 50 + gDisX, screenHeight / 4 + 50 + gDisY);
+      text("PangLOL", 50 + gDisX, screenHeight / 4 + 100 + gDisY);
+      text("Timmy", 50 + gDisX, screenHeight / 4 + 150 + gDisY);
+      text("Sasa", 350 + gDisX, screenHeight / 4 + 50 + gDisY);
+      text("Wingla", 350 + gDisX, screenHeight / 4 + 100 + gDisY);
+      text("Tsz Ho", 350 + gDisX, screenHeight / 4 + 150 + gDisY);
+      fill(255, 0, 255, 120);
+      text("Toby", 50 + pDisX, screenHeight / 4 + 50 + pDisY);
+      text("PangLOL", 50 + pDisX, screenHeight / 4 + 100 + pDisY);
+      text("Timmy", 50 + pDisX, screenHeight / 4 + 150 + pDisY);
+      text("Sasa", 350 + pDisX, screenHeight / 4 + 50 + pDisY);
+      text("Wingla", 350 + pDisX, screenHeight / 4 + 100 + pDisY);
+      text("Tsz Ho", 350 + pDisX, screenHeight / 4 + 150 + pDisY);
+      fill(0, 255, 255, 120);
+      text("Toby", 50 + bDisX, screenHeight / 4 + 50 + bDisY);
+      text("PangLOL", 50 + bDisX, screenHeight / 4 + 100 + bDisY);
+      text("Timmy", 50 + bDisX, screenHeight / 4 + 150 + bDisY);
+      text("Sasa", 350 + bDisX, screenHeight / 4 + 50 + bDisY);
+      text("Wingla", 350 + bDisX, screenHeight / 4 + 100 + bDisY);
+      text("Tsz Ho", 350 + bDisX, screenHeight / 4 + 150 + bDisY);
+      fill(255);
+
+      text("Toby Siu", 50, screenHeight / 4 + 50);
+      text("PangLOL Leung", 50, screenHeight / 4 + 100);
+      text("Timmy Lee", 50, screenHeight / 4 + 150);
+      text("Sasa Wong", 350, screenHeight / 4 + 50);
+      text("Wingla Wong", 350, screenHeight / 4 + 100);
+      text("Tsz Ho Hui", 350, screenHeight / 4 + 150);
+
+      textAlign(LEFT, CENTER);
+      textFont(pixFont);
+      textSize(80);
+      text("+BACK", 60, screenHeight / 5 * 4);
+    }
+
+    // scene 4;
+    function gamePlaying() {
+      if (!bgmDay.isPlaying()) {
+        bgmDay.play();
+      }
+
+      if (!isDayZero) {
+        page = 0;
+        day = 1;
+        isDayZero = true;
+      }
+
+      background(0);
+      image(bgImg[day - 1], screenWidth / 2, screenHeight / 2);
+      background(0, 80);
+      switch (charNum) {
+        case 1:
+          hommie[0] = 1;
+          hommie[1] = 2;
+          hommie[2] = 0;
+          hommie[3] = 3;
+
+          // for (var hm = 0; hm < 4; hm++) {
+          //   var yDis = 0;
+          //   charIdle(hommie[hm], 50 + 100 * (yDis), 50 + 100 * (hm), 0);
+          //   yDis++;
+          //   charWalk(hommie[hm], 50 + 100 * (yDis), 50 + 100 * (hm), 0);
+          //   yDis++;
+          //   charTired(hommie[hm], 50 + 100 * (yDis), 50 + 100 * (hm));
+          //   yDis++;
+          //   charDying(hommie[hm], 50 + 100 * (yDis), 50 + 100 * (hm));
+          //   yDis++;
+          //   charShocked(hommie[hm], 50 + 100 * (yDis), 50 + 100 * (hm));
+          //   yDis++;
+          //   charDead(hommie[hm], 50 + 100 * (yDis), 50 + 100 * (hm));
+          // }
+
+          totalTime = fSel + rSel + bSel + hSel + mSel + sSel + cSel;
+
+          textSize(40);
+
+          text("TimeCred: " + (timeCred - totalTime), screenWidth / 10 * 8, screenHeight / 16 * 12);
+          text("HealthPT: " + hp, screenWidth / 10 * 8, screenHeight / 16 * 13);
+          text("MentalHP: " + mhp, screenWidth / 10 * 8, screenHeight / 16 * 14);
+          text("Stemina: " + st, screenWidth / 10 * 8, screenHeight / 16 * 15);
+
+          //text(fc + " " + frameCount, screenWidth / 5 * 3, screenHeight / 8 * 5);
+          //text("GSEL: " + gSel, screenWidth / 5 * 3, screenHeight / 8 * 6);
+
+          if (totalTime > 24) {
+            fill(255, 0, 0);
+          }
+
+          text("Total: " + totalTime, screenWidth / 5 * 3, screenHeight / 16 * 12);
+
+          fill(255);
+
+          // switch (day) {
+          //   case 1:
+          //     fReq = 4; // Food Requirement;
+          //     rReq = 6; // Sleep Requirement;
+          //     bReq = 1; // Bonfire Requirement;
+          //     hReq = 3; // Hommie Requirement;
+          //     mReq = 2; // Mental Requirement;
+          //     sReq = 8; // Salvage Requirement;
+          //     break;
+          //   case 2:
+          //
+          //     break;
+          //   default:
+          //
+          // }
+
+          switch (page) {
+            case 0:
+              fC = 0;
+              fCC = 0;
+              fCCCC = 0;
+              pointer = 0;
+              salFX = false;
+              timeCheck();
+              daySum();
+              timeManage();
+              timeSel();
+              cameraAlgr();
+              //reqCheck();
+              break;
+            case 1:
+              fAdd = 0;
+              rAdd = 0;
+              bAdd = 0;
+              hAdd = 0;
+              mAdd = 0;
+              sAdd = 0;
+              failed = false;
+              logicAlgr();
+              page = 2;
+              break;
+            case 2:
+              cutScene();
+              //text("yay", screenWidth / 2, screenHeight / 2);
+              break;
+            case 3:
+              // Ending
+              if (endGame) {
+                scene = 5;
+              } else {
+                page = 0;
+                day++;
+                gSel = 0;
+                if (day > 3) {
+				  endVel = 1;
+				  endGame = true;
+				  endanimation();
+                }
+              }
+              break;
+            case 4:
+              salSel();
+              salDis();
+              break;
+            default:
+
+          }
+
+          //text(endGame, screenWidth / 2, screenHeight / 3);
+
+          break;
+        case 2:
+          hommie[0] = 2;
+          hommie[1] = 1;
+          hommie[2] = 0;
+          hommie[3] = 3;
+
+          for (var hm = 0; hm < 4; hm++) {
+            var yDis = 0;
+            charIdle(hommie[hm], 50 + 100 * (yDis), 50 + 100 * (hm), 0);
+            yDis++;
+            charWalk(hommie[hm], 50 + 100 * (yDis), 50 + 100 * (hm), 0);
+            yDis++;
+            charTired(hommie[hm], 50 + 100 * (yDis), 50 + 100 * (hm));
+            yDis++;
+            charDying(hommie[hm], 50 + 100 * (yDis), 50 + 100 * (hm));
+            yDis++;
+            charShocked(hommie[hm], 50 + 100 * (yDis), 50 + 100 * (hm));
+            yDis++;
+            charDead(hommie[hm], 50 + 100 * (yDis), 50 + 100 * (hm));
+          }
+          break;
+        default:
+
+      }
+    }
+
+    function salDis() {
+      if (fCCCC > 125) {
+        if (gSel == 0) {
+          text("+YES", screenWidth / 14, screenHeight / 16 * 14);
+          text("-NO", screenWidth / 14 * 3, screenHeight / 16 * 14);
+        } else if (gSel == 1) {
+          text("-YES", screenWidth / 14, screenHeight / 16 * 14);
+          text("+NO", screenWidth / 14 * 3, screenHeight / 16 * 14);
+        }
+      }
+    }
+
+    function salSel() {
+      if (fCCCC <= 125) {
+        background(0, 150);
+        text("You've found a chest!", screenWidth / 14, screenHeight / 16 * 11);
+        if (fCCCC < 75) {
+          image(salBox[0], screenWidth / 2, screenHeight / 2);
+        } else {
+          image(salBox[1], screenWidth / 2, screenHeight / 2);
+        }
+      } else {
+        switch (salSelVel) {
+          case 0:
+            background(0, 150);
+            text("You've found a Medkit!", screenWidth / 14, screenHeight / 16 * 11);
+            text("Would you take it?", screenWidth / 14, screenHeight / 16 * 12);
+            image(salB[salSelVel], screenWidth / 2, screenHeight / 2);
+            break;
+          case 1:
+            background(0, 150);
+            text("You've found a Canned Food!", screenWidth / 14, screenHeight / 16 * 11);
+            text("Would you take it?", screenWidth / 14, screenHeight / 16 * 12);
+            image(salB[salSelVel], screenWidth / 2, screenHeight / 2);
+            break;
+          case 2:
+            background(0, 150);
+            text("You've found a Canned Food!", screenWidth / 14, screenHeight / 16 * 11);
+            text("Would you take it?", screenWidth / 14, screenHeight / 16 * 12);
+            image(salB[salSelVel], screenWidth / 2, screenHeight / 2);
+            break;
+          case 3:
+            background(0, 150);
+            text("You've found a Wall Paper!", screenWidth / 14, screenHeight / 16 * 11);
+            text("Which you can download from this website.", screenWidth / 14, screenHeight / 16 * 12);
+            image(salB[salSelVel], screenWidth / 2, screenHeight / 2);
+            break;
+          case 4:
+            background(0, 150);
+            text("You've found a car part!", screenWidth / 14, screenHeight / 16 * 11);
+            text("Would you take it?", screenWidth / 14, screenHeight / 16 * 12);
+            image(salB[salSelVel], screenWidth / 2, screenHeight / 2);
+            break;
+          default:
+        }
+      }
+      text(salSelVel, -100, -100);
+      fCCCC++;
+    }
+
+    function salLogic() {
+      if (salFX) {
+        switch (salSelVel) {
+          case 0:
+            for (var i = 1; i < 4; i++) {
+              hommieHP[i]++;
+            }
+
+            break;
+          case 1:
+            for (var i = 1; i < 4; i++) {
+              hommieHP[i]++;
+              if (hommieHP[i] > 3) {
+                hommieHP[i] = 3;
+              }
+            }
+            hp += 25;
+            if (hp > 100) {
+              hp = 100;
+            }
+            st += 25;
+            if (st > 100) {
+              st = 100;
+            }
+            mhp += 30;
+            if (mhp > 100) {
+              mhp = 100;
+            }
+            break;
+          case 2:
+            for (var i = 1; i < 4; i++) {
+              hommieHP[i]--;
+              if (hommieHP[i] < 0) {
+                hommieHP[i] = 0;
+              }
+            }
+            hp -= 25;
+            if (hp < 0) {
+              hp = 0;
+            }
+            st -= 25;
+            if (st < 0) {
+              st = 0;
+            }
+            mhp -= 30;
+            if (mhp < 0) {
+              mhp = 0;
+            }
+            break;
+          case 4:
+            partsFound = true;
+            break;
+          default:
+
+        }
+      }
+      for (var i = 1; i < 4; i++) {
+        if (hommieHP[i] > 3) {
+          hommieHP[i] = 3;
+        }
+      }
+    }
+
+    function cameraAlgr() {
+      // Mike
+      switch (hommieHP[2]) {
+        case 3:
+          charIdle(0, screenWidth / 2 - 150, screenHeight / 5 * 2 - 30, 200);
+          break;
+        case 2:
+          charTired(0, screenWidth / 2 - 150, screenHeight / 5 * 2 - 30, 200);
+          break;
+        case 1:
+          charDying(0, screenWidth / 2 - 150, screenHeight / 5 * 2 - 30, 200);
+          break;
+        case 0:
+          charDead(0, screenWidth / 2 - 150, screenHeight / 5 * 2 + 40 - 30, 200);
+          break;
+        default:
+
+      }
+      // Jess
+      switch (hommieHP[1]) {
+        case 3:
+          charIdle(2, screenWidth / 2 - 50, screenHeight / 5 * 2 - 30, 200);
+          break;
+        case 2:
+          charTired(2, screenWidth / 2 - 50, screenHeight / 5 * 2 - 30, 200);
+          break;
+        case 1:
+          charDying(2, screenWidth / 2 - 50, screenHeight / 5 * 2 - 30, 200);
+          break;
+        case 0:
+          charDead(2, screenWidth / 2 - 50, screenHeight / 5 * 2 + 40 - 30, 200);
+          break;
+        default:
+
+      }
+      // Kenny
+      switch (round(map(hp, 0, 100, 0, 3))) {
+        case 3:
+          charIdle(1, screenWidth / 2 + 50, screenHeight / 5 * 2 - 30, 200);
+          break;
+        case 2:
+          charTired(1, screenWidth / 2 + 50, screenHeight / 5 * 2 - 30, 200);
+          break;
+        case 1:
+          charDying(1, screenWidth / 2 + 50, screenHeight / 5 * 2 - 30, 200);
+          break;
+        case 0:
+          charDead(1, screenWidth / 2 + 50, screenHeight / 5 * 2 + 40 - 30, 200);
+          break;
+        default:
+          charDead(1, screenWidth / 2 + 50, screenHeight / 5 * 2 + 40 - 30, 200);
+      }
+      // Scarlett
+      switch (hommieHP[2]) {
+        case 3:
+          charIdle(3, screenWidth / 2 + 150, screenHeight / 5 * 2 - 30, 200);
+          break;
+        case 2:
+          charTired(3, screenWidth / 2 + 150, screenHeight / 5 * 2 - 30, 200);
+          break;
+        case 1:
+          charDying(3, screenWidth / 2 + 150, screenHeight / 5 * 2 - 30, 200);
+          break;
+        case 0:
+          charDead(3, screenWidth / 2 + 150, screenHeight / 5 * 2 + 40 - 30, 200);
+          break;
+        default:
+
+      }
+      // Environment
+      for (var i = 0; i < 2; i++) {
+        switch (sceneEleVel[i]) {
+          case 0:
+            image(sceneEle[0], screenWidth / 2 + 250 + (i * 500), screenHeight / 5 * 2 - 60, 200);
+            break;
+          case 1:
+            image(sceneEle[2], screenWidth / 2 - 250 + (i * 500), screenHeight / 5 * 2 - 25, 200);
+            break;
+          case 2:
+            image(sceneEle[2], screenWidth / 2 - 250 + (i * 500), screenHeight / 5 * 2 - 25, 200);
+            break;
+          case 3:
+            image(sceneEle[3], screenWidth / 2 - 250 + (i * 500), screenHeight / 5 * 2 - 62, 200);
+            break;
+          case 4:
+            image(sceneEle[4], screenWidth / 2 - 250 + (i * 500), screenHeight / 5 * 2 - 25, 200);
+            break;
+          case 5:
+            image(sceneEle[5], screenWidth / 2 - 250 + (i * 500), screenHeight / 5 * 2 - 63, 200);
+            break;
+          case 6:
+            image(sceneEle[6], screenWidth / 2 - 250 + (i * 500), screenHeight / 5 * 2 - 63, 200);
+            break;
+          default:
+
+        }
+      }
+    }
+
+    function logicAlgr() {
+      if (fSel < fReq) {
+        bAdd += 1;
+        hpDif -= 15;
+        stDif -= 10;
+        sAdd += 2;
+        failed = true;
+        failCount++;
+      }
+      if (rSel < rReq) {
+        stDif -= 15;
+        bAdd += 1;
+        failed = true;
+        failCount++;
+      }
+      if (bSel < bReq) {
+        hpDif -= 5;
+        stDif -= 10;
+        failed = true;
+        failCount++;
+      }
+      if (hSel < hReq) {
+        mhpDif -= 10;
+        failed = true;
+        failCount++;
+      }
+      if (mSel < mReq) {
+        mhpDif -= 20;
+        stDif -= 10;
+        failed = true;
+        failCount++;
+      }
+      if (cSel >= cReq) {
+        endVel = 2;
+		endGame = true;
+		endanimation();
+      }
+
+      if (!failed) {
+        failCount = 0;
+      }
+
+      switch (failCount) {
+        case 0:
+          hommieHP[2] = 3;
+          hommieHP[3] = 3;
+          hommieHP[1] = 3;
+          break;
+        case 1:
+          // Mike Wounded
+          hommieHP[2] = 2;
+          hommieHP[3] = 3;
+          hommieHP[1] = 3;
+          hAdd += 1;
+          break;
+        case 2:
+          // Mike, Scarlett Wounded
+          hommieHP[2] = 1;
+          hommieHP[3] = 2;
+          hommieHP[1] = 3;
+          hAdd += 1;
+          break;
+        case 3:
+          // Mike Dead, Scarlett Wounded
+          hommieHP[2] = 0;
+          hommieHP[3] = 2;
+          hommieHP[1] = 2;
+          mhpDif -= 30;
+          break;
+        case 4:
+          // Mike Dead, Scarlett, Jess Wounded
+          hommieHP[2] = 0;
+          hommieHP[3] = 1;
+          hommieHP[1] = 2;
+          break;
+        case 5:
+          // Scarlett, Mike Dead, Jess Wounded
+          hommieHP[2] = 0;
+          hommieHP[3] = 0;
+          hommieHP[1] = 2;
+          mhpDif -= 30;
+          break;
+        case 6:
+          // Scarlett, Mike Dead, Jess Wounded
+          hommieHP[2] = 0;
+          hommieHP[3] = 0;
+          hommieHP[1] = 1;
+          break;
+        case 7:
+          // Scarlett, Mike, Jess Dead
+          hommieHP[2] = 0;
+          hommieHP[3] = 0;
+          hommieHP[1] = 0;
+          mhpDif -= 30;
+          break;
+        default:
+          hommieHP[2] = 0;
+          hommieHP[3] = 0;
+          hommieHP[1] = 0;
+          mhpDif -= 30;
+      }
+
+      if (hSel >= hReq) {
+        for (var i = 1; i < 4; i++) {
+          if (hommieHP[i] < 3 && hommieHP != 0) {
+            hommieHP[i]++;
+          }
+        }
+      }
+
+      if (mSel >= mReq && mhp < 100) {
+        mhp += 10;
+        if (mhp > 100) {
+          mhp = 100;
+        }
+      }
+
+      if (hommieHP[2] <= 2 && hommieHP[2] != 0) {
+        hAdd += 1;
+        hommieHPDif[2] += 1;
+      } else if ((hommieHP[2] == 0 || hommieHP[2] == 4) && hommieHPDif[2] != 0) {
+        hReq -= hommieHPDif[2];
+        hommieHPDif[2] = 0;
+      }
+      if (hommieHP[3] <= 2 && hommieHP[3] != 0) {
+        hAdd += 1;
+        hommieHPDif[3] += 1;
+      } else if ((hommieHP[3] == 0 || hommieHP[3] == 4) && hommieHPDif[3] != 0) {
+        hReq -= hommieHPDif[3];
+        hommieHPDif[3] = 0;
+      }
+      if (hommieHP[1] <= 2 && hommieHP[1] != 0) {
+        hAdd += 1;
+        hommieHPDif[1] += 1;
+      } else if ((hommieHP[1] == 0 || hommieHP[1] == 4) && hommieHPDif[1] != 0) {
+        hReq -= hommieHPDif[1];
+        hommieHPDif[3] = 0;
+      }
+
+      if (st <= 50) {
+        rAdd++;
+      }
+
+      fReq = fReq + fAdd;
+      rReq = rReq + rAdd;
+      bReq = bReq + bAdd;
+      hReq = hReq + hAdd;
+      mReq = mReq + mAdd;
+      sReq = sReq + sAdd;
+
+      hp += hpDif;
+      mhp += mhpDif;
+      st += stDif;
+
+      if (mhp <= 30 && !hpHalfed) {
+        hp = hp / 2;
+      }
+
+      if (st <= 0) {
+        st = 0;
+      }
+
+      if (mhp <= 0) {
+        mhp = 0;
+        hp = 0;
+      }
+
+      if (hp <= 0) {
+        hp = 0;
+        endVel = 0;
+        endGame = true;
+		endanimation();
+      }
+    }
+
+    function endingAni() {
+      //text(q, screenWidth / 2, screenHeight / 3);
+      bgmDay.stop();
+      background(0);
+      //text("end", screenWidth / 2, screenHeight / 2);
+        switch (endVel) {
+          case 0:
+          if (!deathSFX.isPlaying() && !SFXplayed) {
+            deathSFX.play();
+            SFXplayed = true;
+          }
+          text("Your journey had ended.", screenWidth / 12, screenHeight / 8 * 3);
+          text("As you slowly drag your tiring body to meet up your friends,", screenWidth / 12, screenHeight / 8 * 4);
+          text("you realised your death.", screenWidth / 12, screenHeight / 8 * 5);
+          //image(endAniA, screenWidth / 2, screenHeight / 2);
+          //text("Dead", screenWidth / 2, screenHeight / 3 * 2);
+            break;
+          case 1:
+          if (!walkSFX.isPlaying() && !SFXplayed) {
+            walkSFX.play()
+            SFXplayed = true;
+          }
+          text("Your journey had ended.", screenWidth / 12, screenHeight / 8 * 3);
+          text("You and your friends stepped out from the woods,", screenWidth / 12, screenHeight / 8 * 4);
+          text("hoping maybe one day,", screenWidth / 12, screenHeight / 8 * 5);
+          text("help would come and drag you out from dispare.", screenWidth / 12, screenHeight / 8 * 6);
+          //image(endAniB, screenWidth / 2, screenHeight / 2);
+            break;
+          case 2:
+          if (!carSFX.isPlaying() && !SFXplayed) {
+            carSFX.play()
+            SFXplayed = true;
+          }
+          text("Your journey had ended.", screenWidth / 12, screenHeight / 8 * 3);
+          text("You and your friends all happily got on the car,", screenWidth / 12, screenHeight / 8 * 4);
+          text("It's not a long way till the reunion of civilisation.", screenWidth / 12, screenHeight / 8 * 5);
+          //image(endAniC, screenWidth / 2, screenHeight / 2);
+            break;
+          default:
+
+      }
+    }
+
+    function reqCheck() {
+      text(fReq, screenWidth / 3 + 50, screenHeight / 8 * 2);
+      text(rReq, screenWidth / 3 + 50, screenHeight / 8 * 3);
+      text(bReq, screenWidth / 3 + 50, screenHeight / 8 * 4);
+      text(hReq, screenWidth / 3 + 50, screenHeight / 8 * 5);
+      text(mReq, screenWidth / 3 + 50, screenHeight / 8 * 6);
+      text(sReq, screenWidth / 3 + 50, screenHeight / 8 * 7);
+
+      text(fAdd, screenWidth / 3 + 100, screenHeight / 8 * 2);
+      text(rAdd, screenWidth / 3 + 100, screenHeight / 8 * 3);
+      text(bAdd, screenWidth / 3 + 100, screenHeight / 8 * 4);
+      text(hAdd, screenWidth / 3 + 100, screenHeight / 8 * 5);
+      text(mAdd, screenWidth / 3 + 100, screenHeight / 8 * 6);
+      text(sAdd, screenWidth / 3 + 100, screenHeight / 8 * 7);
+    }
+
+    function cutScene() {
+      //text(fC + " " + fCC + " " + pass + " " + fSel + " " + pointer, screenWidth / 3, screenHeight / 8 * 6);
+      background(0, 150);
+      if (fCC <= totalTime || pointer < 7) {
+        switch (pointer) {
+          case 0:
+          if (!actSFX[pointer].isPlaying()) {
+            actSFX[pointer].play();
+          }
+            if (pass < fSel) {
+              if (fC <= 25) {
+                if (fC < 5) {
+                  image(fActAni[0], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 5 && fC < 10) {
+                  image(fActAni[1], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 10 && fC < 15) {
+                  image(fActAni[2], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 15 && fC < 20) {
+                  image(fActAni[3], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 20 && fC <= 25) {
+                  image(fActAni[4], screenWidth / 2, screenHeight / 2);
+                }
+                fC++;
+              } else {
+                fC = 0;
+                pass++;
+              }
+            } else {
+              actSFX[pointer].stop();
+              pointer++;
+              pass = 0;
+            }
+            break;
+          case 1:
+          if (!actSFX[pointer].isPlaying()) {
+            actSFX[pointer].play();
+          }
+            if (pass < rSel) {
+              if (fC <= 25) {
+                if (fC < 5) {
+                  image(rActAni[0], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 5 && fC < 10) {
+                  image(rActAni[1], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 10 && fC < 15) {
+                  image(rActAni[2], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 15 && fC < 20) {
+                  image(rActAni[3], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 20 && fC <= 25) {
+                  image(rActAni[4], screenWidth / 2, screenHeight / 2);
+                }
+                fC++;
+              } else {
+                fC = 0;
+                pass++;
+              }
+            } else {
+              actSFX[pointer].stop();
+              pointer++;
+              pass = 0;
+            }
+            break;
+          case 2:
+          if (!actSFX[pointer].isPlaying()) {
+            actSFX[pointer].play();
+          }
+            if (pass < bSel) {
+              if (fC <= 25) {
+                if (fC < 5) {
+                  image(bActAni[0], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 5 && fC < 10) {
+                  image(bActAni[1], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 10 && fC < 15) {
+                  image(bActAni[2], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 15 && fC < 20) {
+                  image(bActAni[3], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 20 && fC <= 25) {
+                  image(bActAni[4], screenWidth / 2, screenHeight / 2);
+                }
+                fC++;
+              } else {
+                fC = 0;
+                pass++;
+              }
+            } else {
+              actSFX[pointer].stop();
+              pointer++;
+              pass = 0;
+            }
+            break;
+          case 3:
+
+            if (pass < hSel) {
+              if (fC <= 25) {
+                if (fC < 5) {
+                  image(hActAni[0], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 5 && fC < 10) {
+                  image(hActAni[1], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 10 && fC < 15) {
+                  image(hActAni[2], screenWidth / 2, screenHeight / 2);
+                  if (!actSFX[pointer].isPlaying()) {
+                    actSFX[pointer].play();
+                  }
+                } else if (fC >= 15 && fC < 20) {
+                  image(hActAni[3], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 20 && fC <= 25) {
+                  image(hActAni[4], screenWidth / 2, screenHeight / 2);
+                  if (!actSFX[pointer].isPlaying()) {
+                    actSFX[pointer].play();
+                  }
+                }
+                fC++;
+              } else {
+                fC = 0;
+                pass++;
+              }
+            } else {
+              actSFX[pointer].stop();
+              pointer++;
+              pass = 0;
+            }
+            break;
+          case 4:
+          if (!actSFX[pointer].isPlaying()) {
+            actSFX[pointer].play();
+          }
+            if (pass < mSel) {
+              if (fC <= 25) {
+                if (fC < 5) {
+                  image(mActAni[0], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 5 && fC < 10) {
+                  image(mActAni[1], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 10 && fC < 15) {
+                  image(mActAni[2], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 15 && fC < 20) {
+                  image(mActAni[3], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 20 && fC <= 25) {
+                  image(mActAni[4], screenWidth / 2, screenHeight / 2);
+                }
+                fC++;
+              } else {
+                fC = 0;
+                pass++;
+              }
+            } else {
+              actSFX[pointer].stop();
+              pointer++;
+              pass = 0;
+            }
+            break;
+          case 5:
+          if (!actSFX[pointer].isPlaying()) {
+            actSFX[pointer].play();
+          }
+            if (pass < sSel) {
+              if (fC <= 25) {
+                if (fC < 5) {
+                  image(sActAni[0], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 5 && fC < 10) {
+                  image(sActAni[1], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 10 && fC < 15) {
+                  image(sActAni[2], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 15 && fC < 20) {
+                  image(sActAni[3], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 20 && fC <= 25) {
+                  image(sActAni[4], screenWidth / 2, screenHeight / 2);
+                }
+                fC++;
+              } else {
+                fC = 0;
+                pass++;
+              }
+            } else {
+              actSFX[pointer].stop();
+              pointer++;
+              pass = 0;
+            }
+            break;
+          case 6:
+          if (!actSFX[pointer].isPlaying()) {
+            actSFX[pointer].play();
+          }
+            if (pass < cSel) {
+              if (fC <= 25) {
+                if (fC < 5) {
+                  image(cRepAni[0], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 5 && fC < 10) {
+                  image(cRepAni[1], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 10 && fC < 15) {
+                  image(cRepAni[2], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 15 && fC < 20) {
+                  image(cRepAni[3], screenWidth / 2, screenHeight / 2);
+                } else if (fC >= 20 && fC <= 25) {
+                  image(cRepAni[4], screenWidth / 2, screenHeight / 2);
+                }
+                fC++;
+              } else {
+                fC = 0;
+                pass++;
+              }
+            } else {
+              actSFX[pointer].stop();
+              pointer++;
+              pass = 0;
+            }
+            break;
+          default:
+            //fCC = 601;
+            text("idle", screenWidth / 2, screenHeight / 2);
+        }
+      } else {
+        if (sSel == 8) {
+          salSelVel = round(random(4));
+          page = 4;
+        } else {
+          page = 3;
+          day++;
+          fSel = 0;
+          rSel = 0;
+          bSel = 0;
+          hSel = 0;
+          mSel = 0;
+          sSel = 0;
+        }
+      }
+      fCC++;
+    }
+
+    function daySum() {
+      //text(fc, screenWidth / 10 * 7, screenHeight / 8 * 6);
+      switch (day) {
+        case 1:
+          text("You are stranded!", screenWidth / 12, screenHeight / 16 * 11);
+          break;
+        case 2:
+          if (fCCC <= 50) {
+            text("Something happened.", screenWidth / 12, screenHeight / 16 * 11);
+          } else if (fCCC > 50 && fCCC <= 100) {
+            switch (hommieHP[1]) {
+              case 3:
+                text("Jess is Okay.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 2:
+                text("Jess is wounded.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 1:
+                text("Jess is dying.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 0:
+                text("Jess is dead.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              default:
+
+            }
+          } else if (fCCC > 100 && fCCC <= 150) {
+            switch (hommieHP[2]) {
+              case 3:
+                text("Mike is Okay.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 2:
+                text("Mike is wounded.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 1:
+                text("Mike is dying.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 0:
+                text("Mike is dead.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              default:
+
+            }
+          } else if (fCCC > 150) {
+            switch (hommieHP[3]) {
+              case 3:
+                text("Scarlett is Okay.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 2:
+                text("Scarlett is wounded.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 1:
+                text("Scarlett is dying.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 0:
+                text("Scarlett is dead.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              default:
+
+            }
+          }
+          break;
+        case 3:
+          if (fCCC <= 50) {
+            text("Something happened.", screenWidth / 12, screenHeight / 16 * 11);
+          } else if (fCCC > 50 && fCCC <= 100) {
+            switch (hommieHP[1]) {
+              case 3:
+                text("Jeess is Okay.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 2:
+                text("Jeess is wounded.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 1:
+                text("Jeess is dying.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 0:
+                text("Jeess is dead.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              default:
+
+            }
+          } else if (fCCC > 100 && fCCC <= 150) {
+            switch (hommieHP[2]) {
+              case 3:
+                text("Mike is Okay.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 2:
+                text("Mike is wounded.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 1:
+                text("Mike is dying.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 0:
+                text("Mike is dead.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              default:
+
+            }
+          } else if (fCCC > 150) {
+            switch (hommieHP[2]) {
+              case 3:
+                text("Scarlett is Okay.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 2:
+                text("Scarlett is wounded.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 1:
+                text("Scarlett is dying.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 0:
+                text("Scarlett is dead.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              default:
+
+            }
+          }
+          break;
+        case 4:
+          if (fCCC <= 50) {
+            text("Something happened.", screenWidth / 12, screenHeight / 16 * 11);
+          } else if (fCCC > 50 && fCCC <= 100) {
+            switch (hommieHP[1]) {
+              case 3:
+                text("Jeess is Okay.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 2:
+                text("Jeess is wounded.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 1:
+                text("Jeess is dying.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 0:
+                text("Jeess is dead.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              default:
+
+            }
+          } else if (fCCC > 100 && fCCC <= 150) {
+            switch (hommieHP[2]) {
+              case 3:
+                text("Mike is Okay.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 2:
+                text("Mike is wounded.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 1:
+                text("Mike is dying.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 0:
+                text("Mike is dead.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              default:
+
+            }
+          } else if (fCCC > 150) {
+            switch (hommieHP[2]) {
+              case 3:
+                text("Scarlett is Okay.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 2:
+                text("Scarlett is wounded.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 1:
+                text("Scarlett is dying.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              case 0:
+                text("Scarlett is dead.", screenWidth / 12, screenHeight / 16 * 11);
+                break;
+              default:
+
+            }
+          }
+          break;
+        default:
+
+      }
+      fCCC++;
+      fCCC = fCCC % 200;
+    }
+
+    function timeManage() {
+      if (!partsFound) {
+        fill(100);
+      }
+
+      if (gSel == 7) {
+        text("+FixCar: ", screenWidth / 12 * 4, screenHeight / 16 * 14);
+      } else {
+        text("-FixCar: ", screenWidth / 12 * 4, screenHeight / 16 * 14);
+      }
+
+      fill(255);
+
+      if (gSel == 6) {
+        text("+Food: ", screenWidth / 12, screenHeight / 16 * 12);
+      } else {
+        text("-Food: ", screenWidth / 12, screenHeight / 16 * 12);
+      }
+
+      if (gSel == 5) {
+        text("+Sleep: ", screenWidth / 12, screenHeight / 16 * 13);
+      } else {
+        text("-Sleep: ", screenWidth / 12, screenHeight / 16 * 13);
+      }
+
+      if (gSel == 4) {
+        text("+Bonfire: ", screenWidth / 12, screenHeight / 16 * 14);
+      } else {
+        text("-Bonfire: ", screenWidth / 12, screenHeight / 16 * 14);
+      }
+
+      if (gSel == 3) {
+        text("+Hommie: ", screenWidth / 12, screenHeight / 16 * 15);
+      } else {
+        text("-Hommie: ", screenWidth / 12, screenHeight / 16 * 15);
+      }
+
+      if (gSel == 2) {
+        text("+Mental: ", screenWidth / 12 * 4, screenHeight / 16 * 12);
+      } else {
+        text("-Mental: ", screenWidth / 12 * 4, screenHeight / 16 * 12);
+      }
+
+      if (gSel == 1) {
+        text("+Salvage: ", screenWidth / 12 * 4, screenHeight / 16 * 13);
+      } else {
+        text("-Salvage: ", screenWidth / 12 * 4, screenHeight / 16 * 13);
+      }
+
+      if (gSel == 0) {
+        text("+Start Day", screenWidth / 5 * 3, screenHeight / 16 * 15);
+      } else {
+        text("-Start Day", screenWidth / 5 * 3, screenHeight / 16 * 15);
+      }
+    }
+
+    function timeSel() {
+      text(fSel, screenWidth / 12 * 3, screenHeight / 16 * 12);
+      text(rSel, screenWidth / 12 * 3, screenHeight / 16 * 13);
+      text(bSel, screenWidth / 12 * 3, screenHeight / 16 * 14);
+      text(hSel, screenWidth / 12 * 3, screenHeight / 16 * 15);
+      text(mSel, screenWidth / 12 * 6, screenHeight / 16 * 12);
+      text(sSel, screenWidth / 12 * 6, screenHeight / 16 * 13);
+
+      if (!partsFound) {
+        fill(100);
+      }
+      text(cSel, screenWidth / 12 * 6, screenHeight / 16 * 14);
+      fill(255);
+
+      //text(gSel, screenWidth / 10 * 8, screenHeight / 8 * 6);
+    }
+
+    function timeCheck() {
+      if (totalTime <= 24) {
+        isDay = true;
+      } else {
+        isDay = false;
+      }
+    }
+
+    function charIdle(c, x, y, s) {
+      if (c == 1) {
+        if (s == 0) {
+          // Kenny Idle Right Side
+          if (fc <= 5) {
+            image(kenny[0], x, y, charScale, charScale);
+          } else if (fc > 5 && fc <= 10) {
+            image(kenny[0], x, y, charScale, charScale);
+          } else if (fc > 10 && fc <= 15) {
+            image(kenny[1], x, y, charScale, charScale);
+          } else if (fc > 15 && fc <= 20) {
+            image(kenny[1], x, y, charScale, charScale);
+          }
+        } else {
+          // Kenny Idle Left Side
+          if (fc <= 5) {
+            image(kenny[2], x, y, charScale, charScale);
+          } else if (fc > 5 && fc <= 10) {
+            image(kenny[2], x, y, charScale, charScale);
+          } else if (fc > 10 && fc <= 15) {
+            image(kenny[3], x, y, charScale, charScale);
+          } else if (fc > 15 && fc <= 20) {
+            image(kenny[3], x, y, charScale, charScale);
+          }
+        }
+      } else if (c == 2) {
+        // Jess Idle
+        if (fc <= 5) {
+          image(jess[0], x, y, charScale, charScale);
+        } else if (fc > 5 && fc <= 10) {
+          image(jess[0], x, y, charScale, charScale);
+        } else if (fc > 10 && fc <= 15) {
+          image(jess[1], x, y, charScale, charScale);
+        } else if (fc > 15 && fc <= 20) {
+          image(jess[1], x, y, charScale, charScale);
+        }
+      } else if (c == 0) {
+        // Mike Idle
+        if (fc <= 5) {
+          image(mike[0], x, y, charScale, charScale);
+        } else if (fc > 5 && fc <= 10) {
+          image(mike[0], x, y, charScale, charScale);
+        } else if (fc > 10 && fc <= 15) {
+          image(mike[1], x, y, charScale, charScale);
+        } else if (fc > 15 && fc <= 20) {
+          image(mike[1], x, y, charScale, charScale);
+        }
+      } else {
+        // Scarlett Idle
+        if (fc <= 5) {
+          image(scar[0], x, y, charScale, charScale);
+        } else if (fc > 5 && fc <= 10) {
+          image(scar[0], x, y, charScale, charScale);
+        } else if (fc > 10 && fc <= 15) {
+          image(scar[1], x, y, charScale, charScale);
+        } else if (fc > 15 && fc <= 20) {
+          image(scar[1], x, y, charScale, charScale);
+        }
+      }
+    }
+
+    function charWalk(c, x, y, s) {
+      if (c == 1) {
+        if (s == 0 || s == 2) {
+          // Kenny Walk Right/Front Side
+          if (fc <= 5) {
+            image(kenny[4], x, y, charScale, charScale);
+          } else if (fc > 5 && fc <= 10) {
+            image(kenny[4], x, y, charScale, charScale);
+          } else if (fc > 10 && fc <= 15) {
+            image(kenny[5], x, y, charScale, charScale);
+          } else if (fc > 15 && fc <= 20) {
+            image(kenny[5], x, y, charScale, charScale);
+          }
+        } else if (s == 1) {
+          // Kenny Walk Left Side
+          if (fc <= 5) {
+            image(kenny[6], x, y, charScale, charScale);
+          } else if (fc > 5 && fc <= 10) {
+            image(kenny[6], x, y, charScale, charScale);
+          } else if (fc > 10 && fc <= 15) {
+            image(kenny[7], x, y, charScale, charScale);
+          } else if (fc > 15 && fc <= 20) {
+            image(kenny[7], x, y, charScale, charScale);
+          }
+        } else {
+          // Kenny Walk Back Side
+          if (fc <= 5) {
+            image(kenny[8], x, y, charScale, charScale);
+          } else if (fc > 5 && fc <= 10) {
+            image(kenny[8], x, y, charScale, charScale);
+          } else if (fc > 10 && fc <= 15) {
+            image(kenny[9], x, y, charScale, charScale);
+          } else if (fc > 15 && fc <= 20) {
+            image(kenny[9], x, y, charScale, charScale);
+          }
+        }
+      } else if (c == 2) {
+        if (s == 3) {
+          // Jess Walk !Back Side
+          if (fc <= 5) {
+            image(jess[4], x, y, charScale, charScale);
+          } else if (fc > 5 && fc <= 10) {
+            image(jess[4], x, y, charScale, charScale);
+          } else if (fc > 10 && fc <= 15) {
+            image(jess[5], x, y, charScale, charScale);
+          } else if (fc > 15 && fc <= 20) {
+            image(jess[5], x, y, charScale, charScale);
+          }
+        } else {
+          // Jess Walk Back Side
+          if (fc <= 5) {
+            image(jess[2], x, y, charScale, charScale);
+          } else if (fc > 5 && fc <= 10) {
+            image(jess[2], x, y, charScale, charScale);
+          } else if (fc > 10 && fc <= 15) {
+            image(jess[3], x, y, charScale, charScale);
+          } else if (fc > 15 && fc <= 20) {
+            image(jess[3], x, y, charScale, charScale);
+          }
+        }
+      }
+    }
+
+    function charTired(c, x, y) {
+      if (c == 1) {
+        // Kenny Tired
+        if (fc <= 5) {
+          image(kenny[10], x, y, charScale, charScale);
+        } else if (fc > 5 && fc <= 10) {
+          image(kenny[11], x, y, charScale, charScale);
+        } else if (fc > 10 && fc <= 15) {
+          image(kenny[12], x, y, charScale, charScale);
+        } else if (fc > 15 && fc <= 20) {
+          image(kenny[13], x, y, charScale, charScale);
+        }
+      } else if (c == 2) {
+        // Jess Tired
+        if (fc <= 5) {
+          image(jess[6], x, y, charScale, charScale);
+        } else if (fc > 5 && fc <= 10) {
+          image(jess[7], x, y, charScale, charScale);
+        } else if (fc > 10 && fc <= 15) {
+          image(jess[8], x, y, charScale, charScale);
+        } else if (fc > 15 && fc <= 20) {
+          image(jess[6], x, y, charScale, charScale);
+        }
+      } else if (c == 0) {
+        // Mike Tired
+        if (fc <= 5) {
+          image(mike[2], x, y, charScale, charScale);
+        } else if (fc > 5 && fc <= 10) {
+          image(mike[3], x, y, charScale, charScale);
+        } else if (fc > 10 && fc <= 15) {
+          image(mike[4], x, y, charScale, charScale);
+        } else if (fc > 15 && fc <= 20) {
+          image(mike[2], x, y, charScale, charScale);
+        }
+      } else {
+        // Scarlett Tired
+        if (fc <= 5) {
+          image(scar[2], x, y, charScale, charScale);
+        } else if (fc > 5 && fc <= 10) {
+          image(scar[3], x, y, charScale, charScale);
+        } else if (fc > 10 && fc <= 15) {
+          image(scar[4], x, y, charScale, charScale);
+        } else if (fc > 15 && fc <= 20) {
+          image(scar[2], x, y, charScale, charScale);
+        }
+      }
+    }
+
+    function charDying(c, x, y) {
+      if (c == 1) {
+        // Kenny Dying
+        if (fc <= 5) {
+          image(kenny[14], x, y, charScale, charScale);
+        } else if (fc > 5 && fc <= 10) {
+          image(kenny[15], x, y, charScale, charScale);
+        } else if (fc > 10 && fc <= 15) {
+          image(kenny[16], x, y, charScale, charScale);
+        } else if (fc > 15 && fc <= 20) {
+          image(kenny[14], x, y, charScale, charScale);
+        }
+      } else if (c == 2) {
+        // Jess Dying
+        if (fc <= 5) {
+          image(jess[9], x, y, charScale, charScale);
+        } else if (fc > 5 && fc <= 10) {
+          image(jess[10], x, y, charScale, charScale);
+        } else if (fc > 10 && fc <= 15) {
+          image(jess[11], x, y, charScale, charScale);
+        } else if (fc > 15 && fc <= 20) {
+          image(jess[9], x, y, charScale, charScale);
+        }
+      } else if (c == 0) {
+        // Mike Dying
+        if (fc <= 5) {
+          image(mike[5], x, y, charScale, charScale);
+        } else if (fc > 5 && fc <= 10) {
+          image(mike[6], x, y, charScale, charScale);
+        } else if (fc > 10 && fc <= 15) {
+          image(mike[7], x, y, charScale, charScale);
+        } else if (fc > 15 && fc <= 20) {
+          image(mike[5], x, y, charScale, charScale);
+        }
+      } else {
+        // Scarlett Dying
+        if (fc <= 5) {
+          image(scar[5], x, y, charScale, charScale);
+        } else if (fc > 5 && fc <= 10) {
+          image(scar[6], x, y, charScale, charScale);
+        } else if (fc > 10 && fc <= 15) {
+          image(scar[7], x, y, charScale, charScale);
+        } else if (fc > 15 && fc <= 20) {
+          image(scar[5], x, y, charScale, charScale);
+        }
+      }
+    }
+
+    function charShocked(c, x, y) {
+      if (c == 1) {
+        // Kenny Shocked
+        if (fc <= 5) {
+          image(kenny[17], x, y, charScale, charScale);
+        } else if (fc > 5 && fc <= 10) {
+          image(kenny[18], x, y, charScale, charScale);
+        } else if (fc > 10 && fc <= 15) {
+          image(kenny[19], x, y, charScale, charScale);
+        } else if (fc > 15 && fc <= 20) {
+          image(kenny[17], x, y, charScale, charScale);
+        }
+      } else if (c == 2) {
+        // Jess Shocked
+        if (fc <= 5) {
+          image(jess[12], x, y, charScale, charScale);
+        } else if (fc > 5 && fc <= 10) {
+          image(jess[13], x, y, charScale, charScale);
+        } else if (fc > 10 && fc <= 15) {
+          image(jess[14], x, y, charScale, charScale);
+        } else if (fc > 15 && fc <= 20) {
+          image(jess[12], x, y, charScale, charScale);
+        }
+      }
+    }
+
+    function charDead(c, x, y) {
+      if (c == 1) {
+        // Kenny Dead
+        if (fc <= 5) {
+          image(kenny[20], x, y, charScale, charScale);
+        } else if (fc > 5 && fc <= 10) {
+          image(kenny[20], x, y, charScale, charScale);
+        } else if (fc > 10 && fc <= 15) {
+          image(kenny[21], x, y, charScale, charScale);
+        } else if (fc > 15 && fc <= 20) {
+          image(kenny[21], x, y, charScale, charScale);
+        }
+      } else if (c == 2) {
+        // Jess Dead
+        if (fc <= 5) {
+          image(jess[15], x, y, charScale, charScale);
+        } else if (fc > 5 && fc <= 10) {
+          image(jess[16], x, y, charScale, charScale);
+        } else if (fc > 10 && fc <= 15) {
+          image(jess[17], x, y, charScale, charScale);
+        } else if (fc > 15 && fc <= 20) {
+          image(jess[15], x, y, charScale, charScale);
+        }
+      } else if (c == 0) {
+        // Mike Dead
+        if (fc <= 5) {
+          image(mike[8], x, y, charScale, charScale);
+        } else if (fc > 5 && fc <= 10) {
+          image(mike[8], x, y, charScale, charScale);
+        } else if (fc > 10 && fc <= 15) {
+          image(mike[9], x, y, charScale, charScale);
+        } else if (fc > 15 && fc <= 20) {
+          image(mike[9], x, y, charScale, charScale);
+        }
+      } else {
+        // Scarlett Dead
+        if (fc <= 5) {
+          image(scar[8], x, y, charScale, charScale);
+        } else if (fc > 5 && fc <= 10) {
+          image(scar[8], x, y, charScale, charScale);
+        } else if (fc > 10 && fc <= 15) {
+          image(scar[9], x, y, charScale, charScale);
+        } else if (fc > 15 && fc <= 20) {
+          image(scar[9], x, y, charScale, charScale);
+        }
+      }
+    }
+
+    function keyReleased() {
+      switch (scene) {
+        case 0:
+          if (keyCode == UP_ARROW && sel > 0) {
+            sel--;
+            selSFX.play();
+          } else if (keyCode == DOWN_ARROW && sel < 2) {
+            sel++;
+            selSFX.play();
+          }
+          if (keyCode == ENTER) {
+            switch (sel) {
+              case 0:
+                confSFX.play();
+                kenAniVel = 0;
+                scene = 1;
+                sel = 0;
+                break;
+              case 1:
+                confSFX.play();
+                scene = 2;
+                sel = 0;
+                break;
+              case 2:
+                confSFX.play();
+                scene = 3;
+                sel = 0;
+                break;
+              default:
+
+            }
+          }
+          break;
+        case 1:
+          //kenAniVel = 0;
+          if (keyCode == LEFT_ARROW && charSel > 0) {
+            charSel--;
+            selSFX.play();
+            charSetX = false;
+          } else if (keyCode == RIGHT_ARROW && charSel < 3) {
+            charSel++;
+            selSFX.play();
+            charSetX = false;
+          }
+
+          if (keyCode == ENTER) {
+            switch (charSel) {
+              case 0:
+                charSetX = true;
+                warnSFX.play();
+                break;
+              case 1:
+                charSetX = false;
+                charSet = true;
+                charSetSFX.play();
+                titleBGM.stop();
+                charNum = 1;
+                break;
+              case 2:
+                charSetX = true;
+                warnSFX.play();
+                // charSetX = false;
+                // charSet = true;
+                // charSetSFX.play();
+                // titleBGM.stop();
+                // charNum = 2;
+                break;
+              case 3:
+                charSetX = true;
+                warnSFX.play();
+                break;
+              default:
+
+            }
+          }
+          break;
+        case 2:
+          if (keyCode == ENTER) {
+            scene = 0;
+            confSFX.play();
+          }
+          break;
+        case 3:
+          if (keyCode == ENTER) {
+            scene = 0;
+            confSFX.play();
+          }
+          break;
+        case 4:
+          switch (page) {
+            case 0:
+              if (keyCode == DOWN_ARROW && gSel >= 1) {
+                if (gSel == 1) {
+                  gSel = 7;
+                  selSFX.play();
+                } else if (gSel > 1) {
+                  gSel--;
+                  selSFX.play();
+                } else if (gSel == 1) {
+                  gSel = 7;
+                  selSFX.play();
+                } else {
+                  warnSFX.play();
+                }
+              } else if (keyCode == UP_ARROW && sel <= 7) {
+                if (gSel == 7) {
+                  gSel = 1;
+                  selSFX.play();
+                } else if (gSel < 7) {
+                  gSel++;
+                  selSFX.play();
+                } else {
+                  warnSFX.play();
+                }
+              }
+              if (keyCode == RIGHT_ARROW || keyCode == LEFT_ARROW) {
+                if (isDay) {
+                  if (gSel > 0) {
+                    gSel = 0;
+                    selSFX.play();
+                  } else {
+                    gSel = 7;
+                    selSFX.play();
+                  }
+                } else {
+                  warnSFX.play();
+                }
+              }
+              if (keyCode == ENTER && fC == 0) {
+                switch (gSel) {
+                  case 0:
+                    confSFX.play();
+                    page = 1;
+                    break;
+                  case 1:
+                    if (sSel == 0) {
+                      sSel = 8;
+                      confSFX.play();
+                    } else {
+                      sSel = 0;
+                      confSFX.play();
+                    }
+                    break;
+                  case 2:
+                    mSel++;
+                    confSFX.play();
+                    mSel = mSel % 25;
+                    break;
+                  case 3:
+                    hSel++;
+                    confSFX.play();
+                    hSel = hSel % 25;
+                    break;
+                  case 4:
+                    bSel++;
+                    confSFX.play();
+                    bSel = bSel % 25;
+                    break;
+                  case 5:
+                    rSel++;
+                    confSFX.play();
+                    rSel = rSel % 25;
+                    break;
+                  case 6:
+                    fSel++;
+                    confSFX.play();
+                    fSel = fSel % 25;
+                    break;
+                  case 7:
+                    if (partsFound) {
+                      cSel++;
+                      confSFX.play();
+                      cSel = cSel % 25;
+                    } else {
+                      warnSFX.play();
+                    }
+                    break;
+                  default:
+
+                }
+              }
+              if (keyCode == SHIFT && fC == 0) {
+                switch (gSel) {
+                  case 1:
+                    warnSFX.play();
+                    sSel = 0;
+                    break;
+                  case 2:
+                    warnSFX.play();
+                    mSel = 0;
+                    break;
+                  case 3:
+                    warnSFX.play();
+                    hSel = 0;
+                    break;
+                  case 4:
+                    warnSFX.play();
+                    bSel = 0;
+                    break;
+                  case 5:
+                    warnSFX.play();
+                    rSel = 0;
+                    break;
+                  case 6:
+                    warnSFX.play();
+                    fSel = 0;
+                    break;
+                  case 7:
+                    if (partsFound) {
+                      warnSFX.play();
+                      cSel = 0;
+                    } else {
+                      warnSFX.play();
+                    }
+                    break;
+                  default:
+
+                }
+              }
+              break;
+            case 4:
+              if (keyCode == LEFT_ARROW || keyCode == RIGHT_ARROW) {
+                if (gSel == 0) {
+                  gSel = 1;
+                  selSFX.play();
+                } else {
+                  gSel = 0;
+                  selSFX.play();
+                }
+              }
+              if (keyCode == ENTER) {
+                if (gSel == 0) {
+                  salFX = true;
+                  confSFX.play();
+                  salLogic();
+                  page = 3;
+                }
+                if (gSel == 1) {
+                  salFX = false;
+                  page = 3;
+                }
+              }
+              break;
+            default:
+          }
+      }
+    }
+  </script>
+  <script>
+  function endanimation() {
+	  if (endGame == true) {
+	  document.getElementById('endframe').style.display = "inherit";
+	  document.getElementById('endframe').style.opacity = "1";
+	  switch(endVel) {
+		  case 0: //sad
+		  	document.getElementById('endframe').style.background = "#8D8E8E";
+			document.getElementById('oend').src = "Ending/end_game_sad_end.gif";
+			document.getElementById('oend').alt = "sad ending";
+			setTimeout(endtext, 5000);
+		  	break;
+		  case 1: //ok
+		  	document.getElementById('endframe').style.background = "#0077A3";
+			document.getElementById('oend').src = "Ending/end_game_no_v.gif";
+			document.getElementById('oend').alt = "ok ending";
+			setTimeout(endtext, 11000);
+		  	break;
+		  case 2: //good
+		  	document.getElementById('endframe').style.background = "#A186BE";
+			document.getElementById('oend').src = "Ending/end_game_good_end.gif";
+			document.getElementById('oend').alt = "good ending";
+			setTimeout(endtext, 8000);
+		  	break;
+	  }
+  }
+  }
+  
+  var endtext = function() {
+	  document.getElementById('endframe').style.opacity = "0";
+  }
+  </script>
+</body>
+
+</html>
